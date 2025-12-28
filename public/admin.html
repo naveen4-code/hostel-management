@@ -1,28 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
-<body>
+
+<body class="dashboard-page">
 
 <div class="dashboard">
 
+  <!-- HEADER -->
   <div class="header">
-    <h2>Admin Dashboard</h2>
-    <button onclick="logout()">Logout</button>
+    <h2>🏢 Hostel Admin</h2>
+    <button class="small danger" onclick="logout()">Logout</button>
   </div>
 
-  <!-- DASHBOARD CARDS -->
+  <!-- STATS -->
   <div class="cards">
     <div class="card">
       <h3>Total Tenants</h3>
       <p id="tenants">0</p>
     </div>
+
     <div class="card">
       <h3>Rents Paid</h3>
       <p id="paidRents">0</p>
     </div>
+
     <div class="card">
       <h3>Pending Complaints</h3>
       <p id="complaints">0</p>
@@ -30,27 +37,59 @@
   </div>
 
   <!-- ASSIGN ROOM -->
-  <h3>Assign Room</h3>
-  <select id="tenantSelect"></select>
-  <input id="roomNo" placeholder="Room Number">
-  <button onclick="assignRoom()">Assign</button>
+  <section class="panel">
+    <h3>🛏 Assign Room</h3>
+
+    <select id="tenantSelect">
+      <option value="">Loading tenants...</option>
+    </select>
+
+    <input
+      id="roomNo"
+      placeholder="Room Number (e.g. 101)"
+    />
+
+    <button class="small primary" onclick="assignRoom()">
+      Assign Room
+    </button>
+  </section>
 
   <!-- UPDATE RENT -->
-  <h3 style="margin-top:30px">Update Rent Payment</h3>
-  <select id="rentTenantSelect"></select>
-  <input id="rentAmount" type="number" placeholder="Rent Amount (₹)">
-  <select id="rentStatus">
-    <option value="true">Paid</option>
-    <option value="false">Pending</option>
-  </select>
-  <button onclick="updateRent()">Update</button>
+  <section class="panel">
+    <h3>💰 Update Rent</h3>
+
+    <select id="rentTenantSelect">
+      <option value="">Select Tenant</option>
+    </select>
+
+    <input
+      id="rentAmount"
+      type="number"
+      placeholder="Monthly Rent (₹)"
+    />
+
+    <select id="rentStatus">
+      <option value="false">Pending</option>
+      <option value="true">Paid</option>
+    </select>
+
+    <button class="small primary" onclick="updateRent()">
+      Update Rent
+    </button>
+  </section>
 
   <!-- COMPLAINTS -->
-  <h3 style="margin-top:30px">Complaints</h3>
-  <ul id="complaintList"></ul>
+  <section class="panel">
+    <h3>🛠 Complaints</h3>
+
+    <ul id="complaintList" class="list">
+      <li class="muted">No complaints</li>
+    </ul>
+  </section>
 
 </div>
 
 <script type="module" src="/js/admin.js"></script>
+
 </body>
 </html>

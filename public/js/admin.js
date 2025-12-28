@@ -5,13 +5,15 @@ import {
   updateDoc,
   doc,
   query,
-  where
+  where,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { signOut } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- AUTH GUARD ---------- */
   auth.onAuthStateChanged(async user => {
@@ -20,13 +22,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const snap = await getDocs(
-      query(collection(db, "users"), where("__name__", "==", user.uid))
-    );
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const data = snap.data();
 
-    if (!snap.docs[0]?.data()?.role === "admin") {
+    if (!data || data.role !== "admin") {
       alert("Access denied");
       location.href = "/index.html";
+      return;
     }
   });
 
@@ -55,12 +57,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         tenantTotal++;
         if (u.rentPaid) rentPaidTotal++;
 
-        const option = `
-          <option value="${d.id}">
-            ${u.name} (${u.email})
-          </option>`;
-        tenantSelect.innerHTML += option;
-        rentTenantSelect.innerHTML += option;
+        const option = document.createElement("option");
+        option.value = d.id;
+        option.textContent = `${u.name} (${u.email})`;
+
+        tenantSelect.appendChild(option.cloneNode(true));
+        rentTenantSelect.appendChild(option);
       }
     });
 
@@ -78,29 +80,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    await updateDoc(doc(db, "users", uid), { roomId: room });
+    await updateDoc(doc(db, "users", uid), {
+      roomId: room
+    });
+
     alert("✅ Room assigned");
   };
 
   /* ---------- UPDATE RENT ---------- */
   window.updateRent = async () => {
-  const uid = rentTenantSelect.value;
-  const paid = rentStatus.value === "true";
-  const amount = Number(rentAmount.value);
+    const uid = rentTenantSelect.value;
+    const amount = Number(rentAmount.value);
+    const paid = rentStatus.value === "true";
 
-  if (!uid || !amount) {
-    alert("Select tenant and enter rent amount");
-    return;
-  }
+    if (!uid || !amount) {
+      alert("Select tenant and enter rent amount");
+      return;
+    }
 
-  await updateDoc(doc(db, "users", uid), {
-    rentPaid: paid,
-    rentAmount: amount,
-    rentUpdatedAt: new Date()
-  });
+    await updateDoc(doc(db, "users", uid), {
+      rentAmount: amount,
+      rentPaid: paid,
+      rentUpdatedAt: new Date()
+    });
 
-  alert("💰 Rent updated");
-};
+    alert("💰 Rent updated");
+    loadTenants(); // refresh stats
+  };
+
   /* ---------- LOAD COMPLAINTS ---------- */
   async function loadComplaints() {
     const q = query(
@@ -113,21 +120,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     complaintsCount.textContent = snap.size;
 
     snap.forEach(d => {
-      complaintList.innerHTML += `
-        <li>
-          ${d.data().message}
-          <button class="small" onclick="resolveComplaint('${d.id}')">
-            Resolve
-          </button>
-        </li>`;
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${d.data().message}
+        <button class="small">Resolve</button>
+      `;
+
+      li.querySelector("button").onclick = async () => {
+        await updateDoc(doc(db, "complaints", d.id), {
+          status: "Resolved"
+        });
+        loadComplaints();
+      };
+
+      complaintList.appendChild(li);
     });
   }
-
-  /* ---------- RESOLVE COMPLAINT ---------- */
-  window.resolveComplaint = async id => {
-    await updateDoc(doc(db, "complaints", id), { status: "Resolved" });
-    loadComplaints();
-  };
 
   /* ---------- LOGOUT ---------- */
   window.logout = async () => {
@@ -135,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     location.href = "/index.html";
   };
 
-  /* ---------- INITIAL LOAD ---------- */
-  await loadTenants();
-  await loadComplaints();
+  /* ---------- INIT ---------- */
+  loadTenants();
+  loadComplaints();
 });
