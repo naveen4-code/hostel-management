@@ -12,20 +12,36 @@
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="signup()">Create Account</button>
-
 <script type="module">
 import { auth } from "/js/firebase.js";
 import {
   createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.signup = async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+window.signup = async function () {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  await createUserWithEmailAndPassword(auth, email, password);
-  location.href = "/profile.html";
+  if (!email || !password) {
+    alert("Enter email and password");
+    return;
+  }
+
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    location.href = "/profile.html";
+  } catch (err) {
+    if (err.code === "auth/email-already-in-use") {
+      alert("This email is already registered. Please login.");
+    } else if (err.code === "auth/weak-password") {
+      alert("Password must be at least 6 characters.");
+    } else {
+      alert(err.message);
+    }
+  }
 };
 </script>
+
+
 </body>
 </html>
