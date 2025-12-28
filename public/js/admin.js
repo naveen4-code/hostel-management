@@ -84,19 +84,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* ---------- UPDATE RENT ---------- */
   window.updateRent = async () => {
-    const uid = rentTenantSelect.value;
-    const paid = rentStatus.value === "true";
+  const uid = rentTenantSelect.value;
+  const paid = rentStatus.value === "true";
+  const amount = Number(rentAmount.value);
 
-    if (!uid) {
-      alert("Select tenant");
-      return;
-    }
+  if (!uid || !amount) {
+    alert("Select tenant and enter rent amount");
+    return;
+  }
 
-    await updateDoc(doc(db, "users", uid), { rentPaid: paid });
-    alert("💰 Rent status updated");
-    loadTenants();
-  };
+  await updateDoc(doc(db, "users", uid), {
+    rentPaid: paid,
+    rentAmount: amount,
+    rentUpdatedAt: new Date()
+  });
 
+  alert("💰 Rent updated");
+};
   /* ---------- LOAD COMPLAINTS ---------- */
   async function loadComplaints() {
     const q = query(

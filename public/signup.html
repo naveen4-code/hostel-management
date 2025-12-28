@@ -1,47 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Signup</title>
+  <title>Create Account</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="auth-page">
 
-<h2>Signup</h2>
+<div class="auth-card">
+  <h2>Create Account</h2>
+  <p class="sub">Join your hostel digitally</p>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+  <input id="email" type="email" placeholder="Email">
+  <<div class="password-wrapper">
+  <input
+    id="password"
+    type="password"
+    placeholder="Password (min 6 chars)"
+    oninput="checkStrength()"
+  >
+  <span class="toggle" onclick="togglePassword()">👁</span>
+</div>
 
-<button onclick="signup()">Create Account</button>
-<script type="module">
-import { auth } from "/js/firebase.js";
-import {
-  createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<div class="strength">
+  <div id="strengthBar"></div>
+</div>
+<p id="strengthText" class="strength-text"></p>
 
-window.signup = async function () {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+  <button class="full" onclick="signup()">Create Account</button>
 
-  if (!email || !password) {
-    alert("Enter email and password");
-    return;
-  }
+  <p class="switch">
+    Already have an account?
+    <span onclick="openLoginModal()">Login</span>
+  </p>
+</div>
 
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    location.href = "/profile.html";
-  } catch (err) {
-    if (err.code === "auth/email-already-in-use") {
-      alert("This email is already registered. Please login.");
-    } else if (err.code === "auth/weak-password") {
-      alert("Password must be at least 6 characters.");
-    } else {
-      alert(err.message);
-    }
-  }
-};
-</script>
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal">
+  <div class="modal-card">
+    <h3>Login</h3>
 
+    <input id="loginEmail" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Password">
 
+    <button class="full" onclick="loginFromModal()">Login</button>
+    <button class="text" onclick="closeLoginModal()">Cancel</button>
+  </div>
+</div>
+
+<script type="module" src="/js/signup.js"></script>
 </body>
 </html>
