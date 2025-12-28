@@ -2,103 +2,136 @@ import { auth, db } from "./firebase.js";
 import {
   collection,
   getDocs,
-  query,
-  where,
   updateDoc,
   doc,
-  addDoc
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { signOut } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ---------- LOGOUT ---------- */
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "/index.html";
-};
+document.addEventListener("DOMContentLoaded", async () => {
 
-/* ---------- LOAD TENANTS ---------- */
-const tenantSelect = document.getElementById("tenantSelect");
+  /* ---------- AUTH GUARD ---------- */
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      location.href = "/index.html";
+      return;
+    }
 
-async function loadTenants() {
-  const q = query(
-    collection(db, "users"),
-    where("role", "==", "tenant")
-  );
+    const snap = await getDocs(
+      query(collection(db, "users"), where("__name__", "==", user.uid))
+    );
 
-  const snap = await getDocs(q);
-  tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
-
-  snap.forEach(docSnap => {
-    const u = docSnap.data();
-    tenantSelect.innerHTML += `
-      <option value="${docSnap.id}">
-        ${u.name} (${u.email})
-      </option>`;
+    if (!snap.docs[0]?.data()?.role === "admin") {
+      alert("Access denied");
+      location.href = "/index.html";
+    }
   });
-}
 
-loadTenants();
+  /* ---------- ELEMENTS ---------- */
+  const tenantSelect = document.getElementById("tenantSelect");
+  const rentTenantSelect = document.getElementById("rentTenantSelect");
+  const complaintList = document.getElementById("complaintList");
 
-/* ---------- ASSIGN ROOM ---------- */
-window.assignRoom = async () => {
-  const uid = tenantSelect.value;
-  const room = roomNo.value.trim();
+  const tenantsCount = document.getElementById("tenants");
+  const paidRents = document.getElementById("paidRents");
+  const complaintsCount = document.getElementById("complaints");
 
-  if (!uid || !room) {
-    alert("Select tenant and enter room number");
-    return;
+  /* ---------- LOAD TENANTS ---------- */
+  async function loadTenants() {
+    const snap = await getDocs(collection(db, "users"));
+
+    tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
+    rentTenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
+
+    let tenantTotal = 0;
+    let rentPaidTotal = 0;
+
+    snap.forEach(d => {
+      const u = d.data();
+      if (u.role === "tenant") {
+        tenantTotal++;
+        if (u.rentPaid) rentPaidTotal++;
+
+        const option = `
+          <option value="${d.id}">
+            ${u.name} (${u.email})
+          </option>`;
+        tenantSelect.innerHTML += option;
+        rentTenantSelect.innerHTML += option;
+      }
+    });
+
+    tenantsCount.textContent = tenantTotal;
+    paidRents.textContent = rentPaidTotal;
   }
 
-  await updateDoc(doc(db, "users", uid), {
-    roomId: room
-  });
+  /* ---------- ASSIGN ROOM ---------- */
+  window.assignRoom = async () => {
+    const uid = tenantSelect.value;
+    const room = roomNo.value.trim();
 
-  alert("✅ Room assigned");
-};
+    if (!uid || !room) {
+      alert("Select tenant and enter room number");
+      return;
+    }
 
-/* ---------- LOAD COMPLAINTS ---------- */
-const complaintList = document.getElementById("complaintList");
+    await updateDoc(doc(db, "users", uid), { roomId: room });
+    alert("✅ Room assigned");
+  };
 
-async function loadComplaints() {
-  const q = query(
-    collection(db, "complaints"),
-    where("status", "==", "Pending")
-  );
+  /* ---------- UPDATE RENT ---------- */
+  window.updateRent = async () => {
+    const uid = rentTenantSelect.value;
+    const paid = rentStatus.value === "true";
 
-  const snap = await getDocs(q);
-  complaintList.innerHTML = "";
+    if (!uid) {
+      alert("Select tenant");
+      return;
+    }
 
-  snap.forEach(d => {
-    complaintList.innerHTML += `
-      <li>
-        ${d.data().message}
-        <button onclick="resolveComplaint('${d.id}')">Resolve</button>
-      </li>`;
-  });
-}
+    await updateDoc(doc(db, "users", uid), { rentPaid: paid });
+    alert("💰 Rent status updated");
+    loadTenants();
+  };
 
-loadComplaints();
+  /* ---------- LOAD COMPLAINTS ---------- */
+  async function loadComplaints() {
+    const q = query(
+      collection(db, "complaints"),
+      where("status", "==", "Pending")
+    );
 
-/* ---------- RESOLVE COMPLAINT ---------- */
-window.resolveComplaint = async id => {
-  await updateDoc(doc(db, "complaints", id), {
-    status: "Resolved"
-  });
-  loadComplaints();
-};
+    const snap = await getDocs(q);
+    complaintList.innerHTML = "";
+    complaintsCount.textContent = snap.size;
 
-/* ---------- POST NOTICE ---------- */
-window.postNotice = async () => {
-  const text = noticeText.value.trim();
-  if (!text) return;
+    snap.forEach(d => {
+      complaintList.innerHTML += `
+        <li>
+          ${d.data().message}
+          <button class="small" onclick="resolveComplaint('${d.id}')">
+            Resolve
+          </button>
+        </li>`;
+    });
+  }
 
-  await addDoc(collection(db, "notices"), {
-    message: text,
-    createdAt: new Date()
-  });
+  /* ---------- RESOLVE COMPLAINT ---------- */
+  window.resolveComplaint = async id => {
+    await updateDoc(doc(db, "complaints", id), { status: "Resolved" });
+    loadComplaints();
+  };
 
-  noticeText.value = "";
-  alert("📢 Notice posted");
-};
+  /* ---------- LOGOUT ---------- */
+  window.logout = async () => {
+    await signOut(auth);
+    location.href = "/index.html";
+  };
+
+  /* ---------- INITIAL LOAD ---------- */
+  await loadTenants();
+  await loadComplaints();
+});
