@@ -1,58 +1,71 @@
-import { auth, db } from "/js/firebase.js";
+import { auth, db } from "./firebase.js";
 import {
-  doc, getDoc, collection, addDoc, query, where, getDocs
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 auth.onAuthStateChanged(async user => {
-  if (!user) return location.href = "/";
+  if (!user) {
+    location.href = "/index.html";
+    return;
+  }
 
+  // ✅ READ OWN PROFILE (ALLOWED)
   const userSnap = await getDoc(doc(db, "users", user.uid));
   const data = userSnap.data();
 
-  document.getElementById("room").innerText = data.roomId || "Not assigned";
-  document.getElementById("rent").innerText = "₹ " + data.rent;
+  document.getElementById("room").innerHTML = `
+    <div class="card">
+      <h3>Room</h3>
+      <p>${data.roomId || "Not assigned"}</p>
+    </div>
 
-  loadRentStatus(user.uid);
-  loadNotices();
+    <div class="card">
+      <h3>Monthly Rent</h3>
+      <p>₹${data.rentAmount ?? "Not set"}</p>
+      <span class="${data.rentPaid ? "paid" : "pending"}">
+        ${data.rentPaid ? "Paid" : "Pending"}
+      </span>
+    </div>
+  `;
+
+  loadComplaints(user.uid);
 });
 
-async function loadRentStatus(uid) {
-  const month = new Date().toLocaleString("default", { month: "long", year: "numeric" });
-  const q = query(collection(db, "rents"),
-    where("userId", "==", uid),
-    where("month", "==", month)
+/* ---------- COMPLAINTS ---------- */
+async function loadComplaints(uid) {
+  const q = query(
+    collection(db, "complaints"),
+    where("userId", "==", uid)
   );
 
   const snap = await getDocs(q);
-  document.getElementById("status").innerText =
-    snap.empty ? "DUE" : snap.docs[0].data().status;
+  const list = document.getElementById("complaints");
+
+  list.innerHTML = "";
+  snap.forEach(d => {
+    list.innerHTML += `
+      <li>${d.data().message} — ${d.data().status}</li>
+    `;
+  });
 }
 
 window.raiseComplaint = async () => {
-  const msg = document.getElementById("complaintText").value;
+  const text = complaintText.value.trim();
+  if (!text) return;
 
   await addDoc(collection(db, "complaints"), {
     userId: auth.currentUser.uid,
-    message: msg,
+    message: text,
     status: "Pending",
     createdAt: new Date()
   });
 
-  alert("Complaint submitted");
-};
-
-async function loadNotices() {
-  const snap = await getDocs(collection(db, "notices"));
-  const list = document.getElementById("notices");
-  list.innerHTML = "";
-
-  snap.forEach(d =>
-    list.innerHTML += `<li>${d.data().message}</li>`
-  );
-}
-
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "/";
+  complaintText.value = "";
+  loadComplaints(auth.currentUser.uid);
 };
