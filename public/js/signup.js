@@ -4,7 +4,9 @@ import {
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ---------- SIGNUP ---------- */
+/* ---------- GLOBAL STATE ---------- */
+window.passwordStrong = false;
+
 /* ---------- PASSWORD STRENGTH ---------- */
 window.checkStrength = () => {
   const password = document.getElementById("password").value;
@@ -12,7 +14,6 @@ window.checkStrength = () => {
   const text = document.getElementById("strengthText");
 
   let score = 0;
-
   if (password.length >= 6) score++;
   if (/[A-Z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
@@ -25,7 +26,7 @@ window.checkStrength = () => {
     text.style.color = "#dc2626";
     window.passwordStrong = false;
   } 
-  else if (score === 2 || score === 3) {
+  else if (score <= 3) {
     bar.style.width = "65%";
     bar.style.background = "#f59e0b";
     text.textContent = "Medium strength";
@@ -54,11 +55,8 @@ window.togglePassword = () => {
     toggle.textContent = "👁";
   }
 };
-if (!window.passwordStrong) {
-  alert("Please choose a stronger password");
-  return;
-}
 
+/* ---------- SIGNUP ---------- */
 window.signup = async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -68,14 +66,17 @@ window.signup = async () => {
     return;
   }
 
+  if (!window.passwordStrong) {
+    alert("Please choose a stronger password");
+    return;
+  }
+
   try {
     await createUserWithEmailAndPassword(auth, email, password);
     location.href = "/profile.html";
   } catch (err) {
     if (err.code === "auth/email-already-in-use") {
-      openLoginModal(email); // 👈 OPEN POPUP
-    } else if (err.code === "auth/weak-password") {
-      alert("Password must be at least 6 characters");
+      openLoginModal(email);
     } else {
       alert(err.message);
     }
@@ -93,8 +94,8 @@ window.closeLoginModal = () => {
 };
 
 window.loginFromModal = async () => {
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value.trim();
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
 
   try {
     await signInWithEmailAndPassword(auth, email, password);

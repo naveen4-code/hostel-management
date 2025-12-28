@@ -10,21 +10,24 @@
   <h2>Create Account</h2>
   <p class="sub">Join your hostel digitally</p>
 
-  <input id="email" type="email" placeholder="Email">
-  <<div class="password-wrapper">
-  <input
-    id="password"
-    type="password"
-    placeholder="Password (min 6 chars)"
-    oninput="checkStrength()"
-  >
-  <span class="toggle" onclick="togglePassword()">👁</span>
-</div>
+  <input id="email" type="email" placeholder="Email" />
 
-<div class="strength">
-  <div id="strengthBar"></div>
-</div>
-<p id="strengthText" class="strength-text"></p>
+  <!-- PASSWORD -->
+  <div class="password-wrapper">
+    <input
+      id="password"
+      type="password"
+      placeholder="Password (min 6 chars)"
+      oninput="checkStrength()"
+    />
+    <span class="toggle" onclick="togglePassword()">👁</span>
+  </div>
+
+  <!-- STRENGTH -->
+  <div class="strength">
+    <div id="strengthBar"></div>
+  </div>
+  <p id="strengthText" class="strength-text"></p>
 
   <button class="full" onclick="signup()">Create Account</button>
 
@@ -39,8 +42,8 @@
   <div class="modal-card">
     <h3>Login</h3>
 
-    <input id="loginEmail" placeholder="Email">
-    <input id="loginPassword" type="password" placeholder="Password">
+    <input id="loginEmail" type="email" placeholder="Email" />
+    <input id="loginPassword" type="password" placeholder="Password" />
 
     <button class="full" onclick="loginFromModal()">Login</button>
     <button class="text" onclick="closeLoginModal()">Cancel</button>
