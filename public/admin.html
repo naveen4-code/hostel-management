@@ -7,6 +7,7 @@
 <body>
 
 <div class="dashboard">
+
   <div class="header">
     <h2>Admin Dashboard</h2>
     <button onclick="logout()">Logout</button>
@@ -14,35 +15,38 @@
 
   <!-- DASHBOARD CARDS -->
   <div class="cards">
-    <div class="card"><h3>Tenants</h3><p id="tenants">0</p></div>
-    <div class="card"><h3>Rents Paid</h3><p id="paidRents">0</p></div>
-    <div class="card"><h3>Pending Complaints</h3><p id="complaints">0</p></div>
+    <div class="card">
+      <h3>Total Tenants</h3>
+      <p id="tenants">0</p>
+    </div>
+    <div class="card">
+      <h3>Rents Paid</h3>
+      <p id="paidRents">0</p>
+    </div>
+    <div class="card">
+      <h3>Pending Complaints</h3>
+      <p id="complaints">0</p>
+    </div>
   </div>
+
+  <!-- ASSIGN ROOM -->
+  <h3>Assign Room</h3>
+  <select id="tenantSelect"></select>
+  <input id="roomNo" placeholder="Room Number">
+  <button onclick="assignRoom()">Assign</button>
+
+  <!-- UPDATE RENT -->
+  <h3 style="margin-top:30px">Update Rent Payment</h3>
+  <select id="rentTenantSelect"></select>
+  <select id="rentStatus">
+    <option value="true">Paid</option>
+    <option value="false">Pending</option>
+  </select>
+  <button onclick="updateRent()">Update</button>
 
   <!-- COMPLAINTS -->
   <h3 style="margin-top:30px">Complaints</h3>
   <ul id="complaintList"></ul>
-
-  <!-- NOTICE -->
-  <h3 style="margin-top:30px">Post Notice</h3>
-  <input id="noticeText" placeholder="Notice message">
-  <button onclick="postNotice()">Post</button>
-
-  <!-- ASSIGN ROOM -->
-  <h3 style="margin-top:30px">Assign Room</h3>
-
-<select id="tenantSelect">
-  <option value="">Select Tenant</option>
-</select>
-
-<input id="roomNo" placeholder="Room Number">
-<button onclick="assignRoom()">Assign</button>
-
-  <!-- MARK RENT PAID -->
-  <h3 style="margin-top:30px">Mark Rent Paid</h3>
-  <input id="rentUid" placeholder="Tenant UID">
-  <input id="amount" placeholder="Rent Amount">
-  <button onclick="markPaid()">Mark Paid</button>
 
 </div>
 
