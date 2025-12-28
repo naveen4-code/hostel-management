@@ -7,7 +7,8 @@ import {
   doc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-window.login = async () => {
+/* 👇 VERY IMPORTANT: attach to window */
+window.login = async function () {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
@@ -15,7 +16,7 @@ window.login = async () => {
   redirect(res.user.uid);
 };
 
-window.googleLogin = async () => {
+window.googleLogin = async function () {
   const res = await signInWithPopup(auth, provider);
   redirect(res.user.uid);
 };
