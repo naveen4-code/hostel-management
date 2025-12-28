@@ -19,19 +19,13 @@ import {
   createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.signup = async function () {
-  const emailVal = document.getElementById("email").value;
-  const passwordVal = document.getElementById("password").value;
+window.signup = async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  await createUserWithEmailAndPassword(
-    auth,
-    emailVal,
-    passwordVal
-  );
-
-  window.location.href = "/profile.html";
+  await createUserWithEmailAndPassword(auth, email, password);
+  location.href = "/profile.html";
 };
 </script>
-
 </body>
 </html>
