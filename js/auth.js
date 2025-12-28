@@ -1,33 +1,32 @@
 import { auth, provider, db } from "./firebase.js";
 import {
   signInWithEmailAndPassword,
-  signInWithPopup,
-  createUserWithEmailAndPassword
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 import {
-  doc,
-  getDoc
+  doc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-window.login = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+window.login = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
 
   const res = await signInWithEmailAndPassword(auth, email, password);
-  checkProfile(res.user.uid);
+  redirect(res.user.uid);
 };
 
-window.googleLogin = async function () {
+window.googleLogin = async () => {
   const res = await signInWithPopup(auth, provider);
-  checkProfile(res.user.uid);
+  redirect(res.user.uid);
 };
 
-async function checkProfile(uid) {
+async function redirect(uid) {
   const snap = await getDoc(doc(db, "users", uid));
-  if (snap.exists()) {
-    window.location.href = "dashboard.html";
+  if (!snap.exists()) {
+    location.href = "profile.html";
   } else {
-    window.location.href = "profile.html";
+    snap.data().role === "admin"
+      ? location.href = "admin.html"
+      : location.href = "tenant.html";
   }
 }
