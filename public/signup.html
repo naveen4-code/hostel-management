@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Signup</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
@@ -14,17 +14,22 @@
 <button onclick="signup()">Create Account</button>
 
 <script type="module">
-import { auth } from "../js/firebase.js";
-import { createUserWithEmailAndPassword }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { auth } from "/js/firebase.js";
+import {
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 window.signup = async function () {
+  const emailVal = document.getElementById("email").value;
+  const passwordVal = document.getElementById("password").value;
+
   await createUserWithEmailAndPassword(
     auth,
-    email.value,
-    password.value
+    emailVal,
+    passwordVal
   );
-  window.location.href = "profile.html";
+
+  window.location.href = "/profile.html";
 };
 </script>
 
