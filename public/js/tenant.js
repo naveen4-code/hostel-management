@@ -9,55 +9,75 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import { signOut } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+/* ---------- AUTH + LOAD DATA ---------- */
 auth.onAuthStateChanged(async user => {
   if (!user) {
     location.href = "/index.html";
     return;
   }
 
-  // ✅ READ OWN PROFILE (ALLOWED)
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-  const data = userSnap.data();
+  // 🔹 Load tenant profile
+  const snap = await getDoc(doc(db, "users", user.uid));
+  const data = snap.data();
 
-  document.getElementById("room").innerHTML = `
-    <div class="card">
-      <h3>Room</h3>
-      <p>${data.roomId || "Not assigned"}</p>
-    </div>
+  // ✅ Fill cards individually
+  document.getElementById("room").textContent =
+    data.roomId || "Not assigned";
 
-    <div class="card">
-      <h3>Monthly Rent</h3>
-      <p>₹${data.rentAmount ?? "Not set"}</p>
-      <span class="${data.rentPaid ? "paid" : "pending"}">
-        ${data.rentPaid ? "Paid" : "Pending"}
-      </span>
-    </div>
-  `;
+  document.getElementById("rent").textContent =
+    data.rentAmount ? `₹${data.rentAmount}` : "Not set";
+
+  const statusEl = document.getElementById("status");
+  if (data.rentPaid) {
+    statusEl.textContent = "Paid";
+    statusEl.style.color = "green";
+  } else {
+    statusEl.textContent = "Pending";
+    statusEl.style.color = "red";
+  }
 
   loadComplaints(user.uid);
 });
 
 /* ---------- COMPLAINTS ---------- */
 async function loadComplaints(uid) {
+  const list = document.getElementById("notices");
+  if (!list) return;
+
+  list.innerHTML = "";
+
   const q = query(
     collection(db, "complaints"),
     where("userId", "==", uid)
   );
 
   const snap = await getDocs(q);
-  const list = document.getElementById("complaints");
 
-  list.innerHTML = "";
+  if (snap.empty) {
+    list.innerHTML = "<li>No complaints yet</li>";
+    return;
+  }
+
   snap.forEach(d => {
     list.innerHTML += `
-      <li>${d.data().message} — ${d.data().status}</li>
+      <li>
+        ${d.data().message}
+        — <strong>${d.data().status}</strong>
+      </li>
     `;
   });
 }
 
+/* ---------- RAISE COMPLAINT ---------- */
 window.raiseComplaint = async () => {
   const text = complaintText.value.trim();
-  if (!text) return;
+  if (!text) {
+    alert("Enter complaint");
+    return;
+  }
 
   await addDoc(collection(db, "complaints"), {
     userId: auth.currentUser.uid,
@@ -68,4 +88,10 @@ window.raiseComplaint = async () => {
 
   complaintText.value = "";
   loadComplaints(auth.currentUser.uid);
+};
+
+/* ---------- LOGOUT ---------- */
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "/index.html";
 };
