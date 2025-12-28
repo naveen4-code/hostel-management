@@ -1,19 +1,40 @@
 import { auth, db } from "/js/firebase.js";
 import {
-  collection, addDoc, query, where, getDocs
+  doc, getDoc, collection, addDoc, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 auth.onAuthStateChanged(async user => {
-  if (!user) location.href = "/index.html";
-  loadComplaints(user.uid);
+  if (!user) return location.href = "/";
+
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+  const data = userSnap.data();
+
+  document.getElementById("room").innerText = data.roomId || "Not assigned";
+  document.getElementById("rent").innerText = "₹ " + data.rent;
+
+  loadRentStatus(user.uid);
+  loadNotices();
 });
 
+async function loadRentStatus(uid) {
+  const month = new Date().toLocaleString("default", { month: "long", year: "numeric" });
+  const q = query(collection(db, "rents"),
+    where("userId", "==", uid),
+    where("month", "==", month)
+  );
+
+  const snap = await getDocs(q);
+  document.getElementById("status").innerText =
+    snap.empty ? "DUE" : snap.docs[0].data().status;
+}
+
 window.raiseComplaint = async () => {
-  const text = document.getElementById("complaintText").value;
+  const msg = document.getElementById("complaintText").value;
 
   await addDoc(collection(db, "complaints"), {
     userId: auth.currentUser.uid,
-    message: text,
+    message: msg,
     status: "Pending",
     createdAt: new Date()
   });
@@ -21,13 +42,17 @@ window.raiseComplaint = async () => {
   alert("Complaint submitted");
 };
 
-async function loadComplaints(uid) {
-  const list = document.getElementById("complaints");
-  const q = query(collection(db, "complaints"), where("userId", "==", uid));
-  const snap = await getDocs(q);
-
+async function loadNotices() {
+  const snap = await getDocs(collection(db, "notices"));
+  const list = document.getElementById("notices");
   list.innerHTML = "";
-  snap.forEach(d => {
-    list.innerHTML += `<li>${d.data().message} - ${d.data().status}</li>`;
-  });
+
+  snap.forEach(d =>
+    list.innerHTML += `<li>${d.data().message}</li>`
+  );
 }
+
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "/";
+};

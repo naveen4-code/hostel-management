@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Hostel Login</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<h2>Login</h2>
+<div class="auth-container">
+  <h2>Hostel Login</h2>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
-<button onclick="googleLogin()">Google Sign-In</button>
+  <button onclick="login()">Login</button>
+  <button class="secondary" onclick="googleLogin()">Google Login</button>
 
-<p>New user? <a href="/signup.html">Signup</a></p>
+  <p style="margin-top:15px;text-align:center;">
+    New user? <a href="/signup.html">Create account</a>
+  </p>
+</div>
 
-<!-- 👇 MUST be module and MUST be at bottom -->
 <script type="module" src="/js/auth.js"></script>
-
 </body>
 </html>

@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tenant</title>
+  <title>Tenant Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<h2>Tenant Dashboard</h2>
+<div class="dashboard">
+  <div class="header">
+    <h2>Tenant Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<input id="complaintText" placeholder="Complaint">
-<button onclick="raiseComplaint()">Submit</button>
+  <div class="cards">
+    <div class="card"><h3>Room</h3><p id="room"></p></div>
+    <div class="card"><h3>Rent</h3><p id="rent"></p></div>
+    <div class="card"><h3>Status</h3><p id="status"></p></div>
+  </div>
 
-<ul id="complaints"></ul>
+  <h3 style="margin-top:30px">Raise Complaint</h3>
+  <input id="complaintText" placeholder="Describe issue">
+  <button onclick="raiseComplaint()">Submit</button>
+
+  <h3 style="margin-top:30px">Notices</h3>
+  <ul id="notices"></ul>
+</div>
+
+<script type="module" src="/js/tenant.js"></script>
+
 
 <script type="module" src="/js/tenant.js"></script>
 </body>

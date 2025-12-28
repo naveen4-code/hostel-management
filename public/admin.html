@@ -1,19 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<h2>Admin Dashboard</h2>
+<div class="dashboard">
+  <div class="header">
+    <h2>Admin Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<input id="roomNumber" placeholder="Room Number">
-<input id="rent" placeholder="Rent">
-<button onclick="addRoom()">Add Room</button>
+<div class="cards">
+  <div class="card"><h3>Tenants</h3><p id="tenants"></p></div>
+  <div class="card"><h3>Rents Paid</h3><p id="paidRents"></p></div>
+  <div class="card"><h3>Pending Complaints</h3><p id="complaints"></p></div>
+</div>
 
-<ul id="adminComplaints"></ul>
+
+  <h3 style="margin-top:30px">Complaints</h3>
+  <ul id="complaintList"></ul>
+
+  <h3 style="margin-top:30px">Post Notice</h3>
+  <input id="noticeText" placeholder="Notice message">
+  <button onclick="postNotice()">Post</button>
+
+  <h3 style="margin-top:30px">Assign Room</h3>
+<input id="tenantId" placeholder="Tenant UID">
+<input id="roomNo" placeholder="Room Number">
+<button onclick="assignRoom()">Assign</button>
+
+</div>
 
 <script type="module" src="/js/admin.js"></script>
+
 </body>
 </html>
