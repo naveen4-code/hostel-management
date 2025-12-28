@@ -33,21 +33,35 @@ input {
   border: 1px solid #ddd;
 }
 
+/* DEFAULT BUTTON */
 button {
-  width: auto
-  padding: 12px;
+  padding: 10px 16px;
   background: #4f46e5;
-  border: none;
   color: white;
+  border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
-  margin-top: 10px;
+  min-width: 120px;     /* ✅ prevents tiny buttons */
 }
 
-button.secondary {
-  background: #ea4335;
+/* SMALL BUTTON (admin actions) */
+button.small {
+  padding: 6px 10px;
+  font-size: 12px;
+  min-width: auto;
 }
+
+/* FULL WIDTH (login / signup) */
+button.full {
+  width: 100%;
+}
+
+/* DANGER BUTTON */
+button.danger {
+  background: #dc2626;
+}
+
 
 a {
   color: #4f46e5;
@@ -88,4 +102,16 @@ a {
   font-size: 20px;
   font-weight: bold;
   color: #4f46e5;
+}
+select {
+  padding: 8px;
+  width: 260px;
+  margin-bottom: 10px;
+}
+
+.card button,
+li button {
+  padding: 6px 10px;
+  font-size: 12px;
+  margin-left: 10px;
 }

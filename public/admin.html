@@ -30,9 +30,13 @@
 
   <!-- ASSIGN ROOM -->
   <h3 style="margin-top:30px">Assign Room</h3>
-  <input id="tenantId" placeholder="Tenant UID">
-  <input id="roomNo" placeholder="Room Number">
-  <button onclick="assignRoom()">Assign</button>
+
+<select id="tenantSelect">
+  <option value="">Select Tenant</option>
+</select>
+
+<input id="roomNo" placeholder="Room Number">
+<button onclick="assignRoom()">Assign</button>
 
   <!-- MARK RENT PAID -->
   <h3 style="margin-top:30px">Mark Rent Paid</h3>

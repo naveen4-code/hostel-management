@@ -1,122 +1,104 @@
-import { auth, db } from "/js/firebase.js";
+import { auth, db } from "./firebase.js";
 import {
   collection,
   getDocs,
+  query,
+  where,
   updateDoc,
   doc,
   addDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* 🔐 AUTH CHECK */
-onAuthStateChanged(auth, user => {
-  if (!user) location.href = "/";
-});
+import { signOut } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* 🚪 LOGOUT */
+/* ---------- LOGOUT ---------- */
 window.logout = async () => {
   await signOut(auth);
-  location.href = "/";
+  location.href = "/index.html";
 };
 
-/* 📊 DASHBOARD */
-async function loadDashboard() {
-  const usersSnap = await getDocs(collection(db, "users"));
-  const rentsSnap = await getDocs(collection(db, "rents"));
-  const complaintsSnap = await getDocs(collection(db, "complaints"));
+/* ---------- LOAD TENANTS ---------- */
+const tenantSelect = document.getElementById("tenantSelect");
 
-  document.getElementById("tenants").innerText =
-    usersSnap.docs.filter(u => u.data().role === "tenant").length;
+async function loadTenants() {
+  const q = query(
+    collection(db, "users"),
+    where("role", "==", "tenant")
+  );
 
-  document.getElementById("paidRents").innerText =
-    rentsSnap.docs.filter(r => r.data().status === "PAID").length;
+  const snap = await getDocs(q);
+  tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
 
-  document.getElementById("complaints").innerText =
-    complaintsSnap.docs.filter(c => c.data().status === "Pending").length;
+  snap.forEach(docSnap => {
+    const u = docSnap.data();
+    tenantSelect.innerHTML += `
+      <option value="${docSnap.id}">
+        ${u.name} (${u.email})
+      </option>`;
+  });
 }
 
-loadDashboard();
+loadTenants();
 
-/* 🏠 ASSIGN ROOM */
+/* ---------- ASSIGN ROOM ---------- */
 window.assignRoom = async () => {
-  const uid = document.getElementById("tenantId").value.trim();
-  const room = document.getElementById("roomNo").value.trim();
+  const uid = tenantSelect.value;
+  const room = roomNo.value.trim();
 
-  if (!uid || !room) return alert("Enter tenant UID and room number");
+  if (!uid || !room) {
+    alert("Select tenant and enter room number");
+    return;
+  }
 
   await updateDoc(doc(db, "users", uid), {
     roomId: room
   });
 
-  alert("Room assigned successfully");
+  alert("✅ Room assigned");
 };
 
-/* 💰 MARK RENT PAID */
-window.markPaid = async () => {
-  const uid = document.getElementById("rentUid").value.trim();
-  const amount = document.getElementById("amount").value.trim();
+/* ---------- LOAD COMPLAINTS ---------- */
+const complaintList = document.getElementById("complaintList");
 
-  if (!uid || !amount) return alert("Enter rent details");
-
-  const month = new Date().toLocaleString("default", {
-    month: "long",
-    year: "numeric"
-  });
-
-  await addDoc(collection(db, "rents"), {
-    userId: uid,
-    amount: Number(amount),
-    month,
-    status: "PAID"
-  });
-
-  alert("Rent marked as PAID");
-  loadDashboard();
-};
-
-/* 🛠️ COMPLAINTS */
 async function loadComplaints() {
-  const snap = await getDocs(collection(db, "complaints"));
-  const list = document.getElementById("complaintList");
-  list.innerHTML = "";
+  const q = query(
+    collection(db, "complaints"),
+    where("status", "==", "Pending")
+  );
+
+  const snap = await getDocs(q);
+  complaintList.innerHTML = "";
 
   snap.forEach(d => {
-    const c = d.data();
-    list.innerHTML += `
+    complaintList.innerHTML += `
       <li>
-        ${c.message} — ${c.status}
-        ${
-          c.status === "Pending"
-            ? `<button onclick="resolveComplaint('${d.id}')">Resolve</button>`
-            : ""
-        }
-      </li>
-    `;
+        ${d.data().message}
+        <button onclick="resolveComplaint('${d.id}')">Resolve</button>
+      </li>`;
   });
 }
 
 loadComplaints();
 
+/* ---------- RESOLVE COMPLAINT ---------- */
 window.resolveComplaint = async id => {
   await updateDoc(doc(db, "complaints", id), {
     status: "Resolved"
   });
   loadComplaints();
-  loadDashboard();
 };
 
-/* 📢 NOTICE */
+/* ---------- POST NOTICE ---------- */
 window.postNotice = async () => {
-  const msg = document.getElementById("noticeText").value.trim();
-  if (!msg) return alert("Enter notice message");
+  const text = noticeText.value.trim();
+  if (!text) return;
 
   await addDoc(collection(db, "notices"), {
-    message: msg,
+    message: text,
     createdAt: new Date()
   });
 
-  alert("Notice posted");
+  noticeText.value = "";
+  alert("📢 Notice posted");
 };
