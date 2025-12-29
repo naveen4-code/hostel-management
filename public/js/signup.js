@@ -46,23 +46,36 @@ window.checkStrength = () => {
 /* ---------- SHOW / HIDE PASSWORD ---------- */
 window.togglePassword = () => {
   const input = document.getElementById("password");
-  document.querySelector(".toggle").textContent =
-    input.type === "password" ? "🙈" : "👁";
-  input.type = input.type === "password" ? "text" : "password";
+  const toggle = document.querySelector(".toggle");
+
+  if (input.type === "password") {
+    input.type = "text";
+    toggle.textContent = "🙈";
+  } else {
+    input.type = "password";
+    toggle.textContent = "👁";
+  }
 };
 
 /* ---------- SIGNUP ---------- */
 window.signup = async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  if (!email || !password) return alert("Enter email and password");
-  if (!window.passwordStrong) return alert("Choose a stronger password");
+  if (!email || !password) {
+    alert("Enter email and password");
+    return;
+  }
+
+  if (!window.passwordStrong) {
+    alert("Please choose a stronger password");
+    return;
+  }
 
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    /* ✅ CREATE USER DOCUMENT */
+    /* ✅ CREATE USER DOCUMENT (VERY IMPORTANT) */
     await setDoc(doc(db, "users", cred.user.uid), {
       email,
       role: "tenant",
@@ -86,17 +99,20 @@ window.signup = async () => {
 
 /* ---------- LOGIN MODAL ---------- */
 window.openLoginModal = (email = "") => {
-  loginModal.style.display = "flex";
-  loginEmail.value = email;
+  document.getElementById("loginModal").style.display = "flex";
+  document.getElementById("loginEmail").value = email;
 };
 
 window.closeLoginModal = () => {
-  loginModal.style.display = "none";
+  document.getElementById("loginModal").style.display = "none";
 };
 
 window.loginFromModal = async () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
   try {
-    await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+    await signInWithEmailAndPassword(auth, email, password);
     location.href = "/index.html";
   } catch {
     alert("Invalid login credentials");
