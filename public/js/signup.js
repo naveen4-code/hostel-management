@@ -29,16 +29,19 @@ window.checkStrength = () => {
     bar.style.width = "25%";
     bar.style.background = "#dc2626";
     text.textContent = "Weak password";
+    text.style.color = "#dc2626";
     window.passwordStrong = false;
   } else if (score <= 3) {
     bar.style.width = "65%";
     bar.style.background = "#f59e0b";
     text.textContent = "Medium strength";
+    text.style.color = "#f59e0b";
     window.passwordStrong = false;
   } else {
     bar.style.width = "100%";
     bar.style.background = "#16a34a";
     text.textContent = "Strong password";
+    text.style.color = "#16a34a";
     window.passwordStrong = true;
   }
 };
@@ -61,9 +64,11 @@ window.togglePassword = () => {
 window.signup = async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-  if (!email || !password) {
-    alert("Enter email and password");
+  if (!email || !password || !name || !phone) {
+    alert("Please fill all fields");
     return;
   }
 
@@ -73,21 +78,24 @@ window.signup = async () => {
   }
 
   try {
+    // 1️⃣ Create auth account
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    /* ✅ CREATE USER DOCUMENT (VERY IMPORTANT) */
+    // 2️⃣ Create Firestore profile immediately
     await setDoc(doc(db, "users", cred.user.uid), {
+      name,
       email,
+      phone,
       role: "tenant",
-      name: "",
-      phone: "",
       roomId: "",
       rentAmount: 0,
       rentPaid: false,
       createdAt: serverTimestamp()
     });
 
-    location.href = "/profile.html";
+    // 3️⃣ Redirect to tenant dashboard
+    location.href = "/tenant.html";
+
   } catch (err) {
     if (err.code === "auth/email-already-in-use") {
       openLoginModal(email);
