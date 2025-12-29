@@ -19,7 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- AUTH GUARD ---------- */
   auth.onAuthStateChanged(async user => {
-    if (!user) location.href = "/index.html";
+    if (!user) {
+      location.href = "/index.html";
+      return;
+    }
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists() || snap.data().role !== "admin") {
@@ -34,12 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const roomTable = document.getElementById("roomTable");
   const complaintList = document.getElementById("complaintList");
   const noticeList = document.getElementById("noticeList");
+  const noticeText = document.getElementById("noticeText");
 
   const tenantsCount = document.getElementById("tenants");
   const paidRents = document.getElementById("paidRents");
   const complaintsCount = document.getElementById("complaints");
 
-  /* ---------- LOAD TENANTS ---------- */
+  /* ---------- LOAD TENANTS + ROOM LIST ---------- */
   async function loadTenants() {
     const snap = await getDocs(collection(db, "users"));
 
@@ -77,19 +81,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- ASSIGN ROOM ---------- */
   window.assignRoom = async () => {
-    if (!tenantSelect.value || !roomNo.value) return alert("Missing fields");
+    if (!tenantSelect.value || !roomNo.value.trim()) {
+      alert("Select tenant and room");
+      return;
+    }
+
     await updateDoc(doc(db, "users", tenantSelect.value), {
-      roomId: roomNo.value
+      roomId: roomNo.value.trim()
     });
+
     loadTenants();
   };
 
   /* ---------- UPDATE RENT ---------- */
   window.updateRent = async () => {
+    if (!rentTenantSelect.value || !rentAmount.value) {
+      alert("Missing rent details");
+      return;
+    }
+
     await updateDoc(doc(db, "users", rentTenantSelect.value), {
       rentAmount: Number(rentAmount.value),
       rentPaid: rentStatus.value === "true"
     });
+
     loadTenants();
   };
 
