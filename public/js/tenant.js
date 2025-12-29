@@ -13,30 +13,32 @@ import {
 import { signOut } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-let tenantData = null;
-
-/* ---------- AUTH ---------- */
+/* AUTH & LOAD DATA */
 auth.onAuthStateChanged(async user => {
   if (!user) {
     location.href = "/index.html";
     return;
   }
 
+  /* LOAD PROFILE */
   const snap = await getDoc(doc(db, "users", user.uid));
-  tenantData = snap.data();
+  const data = snap.data();
 
-  // Cards
-  room.textContent = tenantData.roomId || "Not assigned";
-  rent.textContent = tenantData.rentAmount ? `₹${tenantData.rentAmount}` : "Not set";
+  document.getElementById("room").textContent =
+    data.roomId || "Not assigned";
 
-  status.textContent = tenantData.rentPaid ? "Paid" : "Pending";
-  status.style.color = tenantData.rentPaid ? "green" : "red";
+  document.getElementById("rent").textContent =
+    data.rentAmount ? `₹${data.rentAmount}` : "Not set";
+
+  const status = document.getElementById("status");
+  status.textContent = data.rentPaid ? "Paid" : "Pending";
+  status.style.color = data.rentPaid ? "green" : "red";
 
   loadComplaints(user.uid);
   loadNotices();
 });
 
-/* ---------- LOAD COMPLAINTS ---------- */
+/* LOAD MY COMPLAINTS */
 async function loadComplaints(uid) {
   const list = document.getElementById("complaints");
   list.innerHTML = "";
@@ -50,7 +52,7 @@ async function loadComplaints(uid) {
   const snap = await getDocs(q);
 
   if (snap.empty) {
-    list.innerHTML = "<li>No complaints raised</li>";
+    list.innerHTML = "<li class='muted'>No complaints yet</li>";
     return;
   }
 
@@ -58,22 +60,42 @@ async function loadComplaints(uid) {
     const c = d.data();
     list.innerHTML += `
       <li>
-        ${c.message} —
-        <strong>${c.status}</strong>
+        ${c.message}
+        <br>
+        <small>Status: <strong>${c.status}</strong></small>
       </li>
     `;
   });
 }
 
-/* ---------- RAISE COMPLAINT ---------- */
+/* LOAD NOTICES */
+async function loadNotices() {
+  const list = document.getElementById("notices");
+  list.innerHTML = "";
+
+  const snap = await getDocs(
+    query(collection(db, "notices"), orderBy("createdAt", "desc"))
+  );
+
+  if (snap.empty) {
+    list.innerHTML = "<li class='muted'>No notices</li>";
+    return;
+  }
+
+  snap.forEach(d => {
+    list.innerHTML += `
+      <li>${d.data().message}</li>
+    `;
+  });
+}
+
+/* RAISE COMPLAINT */
 window.raiseComplaint = async () => {
   const text = complaintText.value.trim();
   if (!text) return alert("Enter complaint");
 
   await addDoc(collection(db, "complaints"), {
     userId: auth.currentUser.uid,
-    tenantName: tenantData.name,
-    roomId: tenantData.roomId || "",
     message: text,
     status: "Pending",
     createdAt: new Date()
@@ -83,21 +105,7 @@ window.raiseComplaint = async () => {
   loadComplaints(auth.currentUser.uid);
 };
 
-/* ---------- LOAD NOTICES ---------- */
-async function loadNotices() {
-  const list = document.getElementById("notices");
-  list.innerHTML = "";
-
-  const snap = await getDocs(
-    query(collection(db, "notices"), orderBy("createdAt", "desc"))
-  );
-
-  snap.forEach(d => {
-    list.innerHTML += `<li>${d.data().message}</li>`;
-  });
-}
-
-/* ---------- LOGOUT ---------- */
+/* LOGOUT */
 window.logout = async () => {
   await signOut(auth);
   location.href = "/index.html";
