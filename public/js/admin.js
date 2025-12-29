@@ -11,51 +11,36 @@ import {
   orderBy,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 import { signOut } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 document.addEventListener("DOMContentLoaded", () => {
-
-  /* ---------- AUTH GUARD ---------- */
   auth.onAuthStateChanged(async user => {
   if (!user) {
     location.href = "/index.html";
     return;
   }
-
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
-
   if (!snap.exists() || snap.data().role !== "admin") {
     alert("Admin access only");
     location.href = "/index.html";
   }
 });
-
-
-  /* ---------- ELEMENTS ---------- */
   const tenantSelect = document.getElementById("tenantSelect");
   const rentTenantSelect = document.getElementById("rentTenantSelect");
   const roomTable = document.getElementById("roomTable");
   const complaintList = document.getElementById("complaintList");
   const noticeList = document.getElementById("noticeList");
   const noticeText = document.getElementById("noticeText");
-
   const tenantsCount = document.getElementById("tenants");
   const paidRents = document.getElementById("paidRents");
   const complaintsCount = document.getElementById("complaints");
-
-  /* ---------- LOAD TENANTS + ROOM LIST ---------- */
   async function loadTenants() {
     const snap = await getDocs(collection(db, "users"));
-
     tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
     rentTenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
     roomTable.innerHTML = "";
-
     let total = 0, paid = 0;
-
     snap.forEach(d => {
       const u = d.data();
       if (u.role === "tenant") {
@@ -77,12 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       }
     });
-
     tenantsCount.textContent = total;
     paidRents.textContent = paid;
   }
-
-  /* ---------- ASSIGN ROOM ---------- */
   window.assignRoom = async () => {
     if (!tenantSelect.value || !roomNo.value.trim()) {
       alert("Select tenant and room");
@@ -95,8 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadTenants();
   };
-
-  /* ---------- UPDATE RENT ---------- */
   window.updateRent = async () => {
     if (!rentTenantSelect.value || !rentAmount.value) {
       alert("Missing rent details");

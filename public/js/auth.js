@@ -6,7 +6,6 @@ import {
 import {
   doc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 window.login = async () => {
   try {
     const email = document.getElementById("email").value;
@@ -18,12 +17,10 @@ window.login = async () => {
     alert(e.message);
   }
 };
-
 window.googleLogin = async () => {
   const res = await signInWithPopup(auth, provider);
   redirect(res.user.uid);
 };
-
 async function redirect(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   if (!snap.exists()) {

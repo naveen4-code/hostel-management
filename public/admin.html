@@ -6,33 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
-
 <body class="dashboard-page">
-
 <div class="dashboard">
-
-  <!-- HEADER -->
   <div class="header">
     <h2>🏢 Hostel Admin</h2>
     <button class="small danger" onclick="logout()">Logout</button>
   </div>
-
-  <!-- STATS -->
   <div class="cards">
     <div class="card"><h3>Total Tenants</h3><p id="tenants">0</p></div>
     <div class="card"><h3>Rents Paid</h3><p id="paidRents">0</p></div>
     <div class="card"><h3>Pending Complaints</h3><p id="complaints">0</p></div>
   </div>
-
-  <!-- ASSIGN ROOM -->
   <section class="panel">
     <h3>🛏 Assign Room</h3>
     <select id="tenantSelect"></select>
     <input id="roomNo" placeholder="Room Number" />
     <button class="small primary" onclick="assignRoom()">Assign</button>
   </section>
-
-  <!-- UPDATE RENT -->
   <section class="panel">
     <h3>💰 Update Rent</h3>
     <select id="rentTenantSelect"></select>
@@ -43,8 +33,6 @@
     </select>
     <button class="small primary" onclick="updateRent()">Update</button>
   </section>
-
-  <!-- ROOM ALLOCATION TABLE -->
   <section class="panel">
     <h3>📋 Room Allocation</h3>
     <table class="table">
@@ -60,23 +48,17 @@
       <tbody id="roomTable"></tbody>
     </table>
   </section>
-
-  <!-- POST NOTICE -->
   <section class="panel">
     <h3>📢 Post Notice</h3>
     <input id="noticeText" placeholder="Enter notice message" />
     <button class="small primary" onclick="postNotice()">Post Notice</button>
     <ul id="noticeList" class="list"></ul>
   </section>
-
-  <!-- COMPLAINTS -->
   <section class="panel">
     <h3>🛠 Complaints</h3>
     <ul id="complaintList"></ul>
   </section>
-
 </div>
-
 <script type="module" src="/js/admin.js"></script>
 </body>
 </html>

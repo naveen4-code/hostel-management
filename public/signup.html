@@ -6,19 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
-
 <body class="auth-page">
-
 <div class="auth-card">
   <h2>Create Account</h2>
   <p class="sub">Join your hostel digitally</p>
-
-  <!-- PROFILE DETAILS -->
   <input id="email" type="email" placeholder="Email" />
   <input id="name" placeholder="Full Name" />
   <input id="phone" placeholder="Phone Number" />
-
-  <!-- PASSWORD -->
   <div class="password-wrapper">
     <input
       id="password"
@@ -28,34 +22,25 @@
     />
     <span class="toggle" onclick="togglePassword()">👁</span>
   </div>
-
-  <!-- PASSWORD STRENGTH -->
   <div class="strength">
     <div id="strengthBar"></div>
   </div>
   <p id="strengthText" class="strength-text"></p>
-
   <button class="full" onclick="signup()">Create Account</button>
-
   <p class="switch">
     Already have an account?
     <span onclick="openLoginModal()">Login</span>
   </p>
 </div>
-
-<!-- LOGIN MODAL -->
 <div id="loginModal" class="modal">
   <div class="modal-card">
     <h3>Login</h3>
-
     <input id="loginEmail" type="email" placeholder="Email" />
     <input id="loginPassword" type="password" placeholder="Password" />
-
     <button class="full" onclick="loginFromModal()">Login</button>
     <button class="text" onclick="closeLoginModal()">Cancel</button>
   </div>
 </div>
-
 <script type="module" src="/js/signup.js"></script>
 </body>
 </html>
