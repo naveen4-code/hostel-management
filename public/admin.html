@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 
@@ -20,76 +19,63 @@
 
   <!-- STATS -->
   <div class="cards">
-    <div class="card">
-      <h3>Total Tenants</h3>
-      <p id="tenants">0</p>
-    </div>
-
-    <div class="card">
-      <h3>Rents Paid</h3>
-      <p id="paidRents">0</p>
-    </div>
-
-    <div class="card">
-      <h3>Pending Complaints</h3>
-      <p id="complaints">0</p>
-    </div>
+    <div class="card"><h3>Total Tenants</h3><p id="tenants">0</p></div>
+    <div class="card"><h3>Rents Paid</h3><p id="paidRents">0</p></div>
+    <div class="card"><h3>Pending Complaints</h3><p id="complaints">0</p></div>
   </div>
 
   <!-- ASSIGN ROOM -->
   <section class="panel">
     <h3>🛏 Assign Room</h3>
-
-    <select id="tenantSelect">
-      <option value="">Loading tenants...</option>
-    </select>
-
-    <input
-      id="roomNo"
-      placeholder="Room Number (e.g. 101)"
-    />
-
-    <button class="small primary" onclick="assignRoom()">
-      Assign Room
-    </button>
+    <select id="tenantSelect"></select>
+    <input id="roomNo" placeholder="Room Number" />
+    <button class="small primary" onclick="assignRoom()">Assign</button>
   </section>
 
   <!-- UPDATE RENT -->
   <section class="panel">
     <h3>💰 Update Rent</h3>
-
-    <select id="rentTenantSelect">
-      <option value="">Select Tenant</option>
-    </select>
-
-    <input
-      id="rentAmount"
-      type="number"
-      placeholder="Monthly Rent (₹)"
-    />
-
+    <select id="rentTenantSelect"></select>
+    <input id="rentAmount" type="number" placeholder="Monthly Rent (₹)" />
     <select id="rentStatus">
       <option value="false">Pending</option>
       <option value="true">Paid</option>
     </select>
+    <button class="small primary" onclick="updateRent()">Update</button>
+  </section>
 
-    <button class="small primary" onclick="updateRent()">
-      Update Rent
-    </button>
+  <!-- ROOM ALLOCATION LIST -->
+  <section class="panel">
+    <h3>📋 Room Allocation</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Room</th>
+          <th>Rent</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="roomTable"></tbody>
+    </table>
+  </section>
+
+  <!-- POST NOTICE -->
+  <section class="panel">
+    <h3>📢 Post Notice</h3>
+    <input id="noticeText" placeholder="Enter notice message" />
+    <button class="small primary" onclick="postNotice()">Post Notice</button>
   </section>
 
   <!-- COMPLAINTS -->
   <section class="panel">
     <h3>🛠 Complaints</h3>
-
-    <ul id="complaintList" class="list">
-      <li class="muted">No complaints</li>
-    </ul>
+    <ul id="complaintList"></ul>
   </section>
 
 </div>
 
 <script type="module" src="/js/admin.js"></script>
-
 </body>
 </html>

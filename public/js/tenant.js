@@ -6,66 +6,60 @@ import {
   addDoc,
   query,
   where,
-  getDocs
+  getDocs,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { signOut } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ---------- AUTH + LOAD DATA ---------- */
+let tenantData = null;
+
+/* ---------- AUTH ---------- */
 auth.onAuthStateChanged(async user => {
   if (!user) {
     location.href = "/index.html";
     return;
   }
 
-  // 🔹 Load tenant profile
   const snap = await getDoc(doc(db, "users", user.uid));
-  const data = snap.data();
+  tenantData = snap.data();
 
-  // ✅ Fill cards individually
-  document.getElementById("room").textContent =
-    data.roomId || "Not assigned";
+  // Cards
+  room.textContent = tenantData.roomId || "Not assigned";
+  rent.textContent = tenantData.rentAmount ? `₹${tenantData.rentAmount}` : "Not set";
 
-  document.getElementById("rent").textContent =
-    data.rentAmount ? `₹${data.rentAmount}` : "Not set";
-
-  const statusEl = document.getElementById("status");
-  if (data.rentPaid) {
-    statusEl.textContent = "Paid";
-    statusEl.style.color = "green";
-  } else {
-    statusEl.textContent = "Pending";
-    statusEl.style.color = "red";
-  }
+  status.textContent = tenantData.rentPaid ? "Paid" : "Pending";
+  status.style.color = tenantData.rentPaid ? "green" : "red";
 
   loadComplaints(user.uid);
+  loadNotices();
 });
 
-/* ---------- COMPLAINTS ---------- */
+/* ---------- LOAD COMPLAINTS ---------- */
 async function loadComplaints(uid) {
-  const list = document.getElementById("notices");
-  if (!list) return;
-
+  const list = document.getElementById("complaints");
   list.innerHTML = "";
 
   const q = query(
     collection(db, "complaints"),
-    where("userId", "==", uid)
+    where("userId", "==", uid),
+    orderBy("createdAt", "desc")
   );
 
   const snap = await getDocs(q);
 
   if (snap.empty) {
-    list.innerHTML = "<li>No complaints yet</li>";
+    list.innerHTML = "<li>No complaints raised</li>";
     return;
   }
 
   snap.forEach(d => {
+    const c = d.data();
     list.innerHTML += `
       <li>
-        ${d.data().message}
-        — <strong>${d.data().status}</strong>
+        ${c.message} —
+        <strong>${c.status}</strong>
       </li>
     `;
   });
@@ -74,13 +68,12 @@ async function loadComplaints(uid) {
 /* ---------- RAISE COMPLAINT ---------- */
 window.raiseComplaint = async () => {
   const text = complaintText.value.trim();
-  if (!text) {
-    alert("Enter complaint");
-    return;
-  }
+  if (!text) return alert("Enter complaint");
 
   await addDoc(collection(db, "complaints"), {
     userId: auth.currentUser.uid,
+    tenantName: tenantData.name,
+    roomId: tenantData.roomId || "",
     message: text,
     status: "Pending",
     createdAt: new Date()
@@ -89,6 +82,20 @@ window.raiseComplaint = async () => {
   complaintText.value = "";
   loadComplaints(auth.currentUser.uid);
 };
+
+/* ---------- LOAD NOTICES ---------- */
+async function loadNotices() {
+  const list = document.getElementById("notices");
+  list.innerHTML = "";
+
+  const snap = await getDocs(
+    query(collection(db, "notices"), orderBy("createdAt", "desc"))
+  );
+
+  snap.forEach(d => {
+    list.innerHTML += `<li>${d.data().message}</li>`;
+  });
+}
 
 /* ---------- LOGOUT ---------- */
 window.logout = async () => {
