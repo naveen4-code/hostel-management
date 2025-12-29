@@ -19,17 +19,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- AUTH GUARD ---------- */
   auth.onAuthStateChanged(async user => {
-    if (!user) {
-      location.href = "/index.html";
-      return;
-    }
+  if (!user) {
+    location.href = "/index.html";
+    return;
+  }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists() || snap.data().role !== "admin") {
-      alert("Access denied");
-      location.href = "/index.html";
-    }
-  });
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists() || snap.data().role !== "admin") {
+    alert("Admin access only");
+    location.href = "/index.html";
+  }
+});
+
 
   /* ---------- ELEMENTS ---------- */
   const tenantSelect = document.getElementById("tenantSelect");
