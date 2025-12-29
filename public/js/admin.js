@@ -2,11 +2,13 @@ import { auth, db } from "./firebase.js";
 import {
   collection,
   getDocs,
-  updateDoc,
   addDoc,
+  deleteDoc,
+  updateDoc,
   doc,
   query,
   where,
+  orderBy,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -87,13 +89,49 @@ window.updateRent = async () => {
 
 /* POST NOTICE */
 window.postNotice = async () => {
-  if (!noticeText.value.trim()) return alert("Enter notice");
+  const text = noticeText.value.trim();
+  if (!text) return alert("Enter notice");
+
   await addDoc(collection(db, "notices"), {
-    message: noticeText.value,
+    message: text,
     createdAt: new Date()
   });
+
   noticeText.value = "";
+  loadNotices();
   alert("📢 Notice posted");
+};
+
+const noticeList = document.getElementById("noticeList");
+
+async function loadNotices() {
+  const snap = await getDocs(
+    query(collection(db, "notices"), orderBy("createdAt", "desc"))
+  );
+
+  noticeList.innerHTML = "";
+
+  if (snap.empty) {
+    noticeList.innerHTML = "<li class='muted'>No notices posted</li>";
+    return;
+  }
+
+  snap.forEach(d => {
+    noticeList.innerHTML += `
+      <li>
+        ${d.data().message}
+        <button class="small danger" onclick="deleteNotice('${d.id}')">
+          Delete
+        </button>
+      </li>
+    `;
+  });
+}
+window.deleteNotice = async id => {
+  if (!confirm("Delete this notice?")) return;
+
+  await deleteDoc(doc(db, "notices", id));
+  loadNotices();
 };
 
 /* LOAD COMPLAINTS WITH TENANT NAME */
@@ -130,3 +168,4 @@ window.logout = async () => {
 
 loadTenants();
 loadComplaints();
+loadNotices();
