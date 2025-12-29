@@ -1,8 +1,14 @@
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+  doc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ---------- GLOBAL STATE ---------- */
 window.passwordStrong = false;
@@ -23,21 +29,16 @@ window.checkStrength = () => {
     bar.style.width = "25%";
     bar.style.background = "#dc2626";
     text.textContent = "Weak password";
-    text.style.color = "#dc2626";
     window.passwordStrong = false;
-  } 
-  else if (score <= 3) {
+  } else if (score <= 3) {
     bar.style.width = "65%";
     bar.style.background = "#f59e0b";
     text.textContent = "Medium strength";
-    text.style.color = "#f59e0b";
     window.passwordStrong = false;
-  } 
-  else {
+  } else {
     bar.style.width = "100%";
     bar.style.background = "#16a34a";
     text.textContent = "Strong password";
-    text.style.color = "#16a34a";
     window.passwordStrong = true;
   }
 };
@@ -45,34 +46,34 @@ window.checkStrength = () => {
 /* ---------- SHOW / HIDE PASSWORD ---------- */
 window.togglePassword = () => {
   const input = document.getElementById("password");
-  const toggle = document.querySelector(".toggle");
-
-  if (input.type === "password") {
-    input.type = "text";
-    toggle.textContent = "🙈";
-  } else {
-    input.type = "password";
-    toggle.textContent = "👁";
-  }
+  document.querySelector(".toggle").textContent =
+    input.type === "password" ? "🙈" : "👁";
+  input.type = input.type === "password" ? "text" : "password";
 };
 
 /* ---------- SIGNUP ---------- */
 window.signup = async () => {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
 
-  if (!email || !password) {
-    alert("Enter email and password");
-    return;
-  }
-
-  if (!window.passwordStrong) {
-    alert("Please choose a stronger password");
-    return;
-  }
+  if (!email || !password) return alert("Enter email and password");
+  if (!window.passwordStrong) return alert("Choose a stronger password");
 
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+    /* ✅ CREATE USER DOCUMENT */
+    await setDoc(doc(db, "users", cred.user.uid), {
+      email,
+      role: "tenant",
+      name: "",
+      phone: "",
+      roomId: "",
+      rentAmount: 0,
+      rentPaid: false,
+      createdAt: serverTimestamp()
+    });
+
     location.href = "/profile.html";
   } catch (err) {
     if (err.code === "auth/email-already-in-use") {
@@ -85,20 +86,17 @@ window.signup = async () => {
 
 /* ---------- LOGIN MODAL ---------- */
 window.openLoginModal = (email = "") => {
-  document.getElementById("loginModal").style.display = "flex";
-  document.getElementById("loginEmail").value = email;
+  loginModal.style.display = "flex";
+  loginEmail.value = email;
 };
 
 window.closeLoginModal = () => {
-  document.getElementById("loginModal").style.display = "none";
+  loginModal.style.display = "none";
 };
 
 window.loginFromModal = async () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
-
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
     location.href = "/index.html";
   } catch {
     alert("Invalid login credentials");

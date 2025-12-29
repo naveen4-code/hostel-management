@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile</title>
+  <title>Complete Profile</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
 
-<h2>Complete Profile</h2>
+<body class="auth-page">
 
-<input id="name" placeholder="Full Name">
-<input id="phone" placeholder="Phone">
+<div class="auth-card">
+  <h2>👤 Complete Your Profile</h2>
+  <p class="sub">Help us personalize your hostel experience</p>
 
-<button onclick="saveProfile()">Save</button>
+  <input id="name" placeholder="Full Name" />
+  <input id="phone" placeholder="Phone Number" />
+
+  <button class="full primary" onclick="saveProfile()">
+    Continue to Dashboard →
+  </button>
+</div>
 
 <script type="module" src="/js/profile.js"></script>
 </body>
