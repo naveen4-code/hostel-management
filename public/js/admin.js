@@ -15,157 +15,163 @@ import {
 import { signOut } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-auth.onAuthStateChanged(async user => {
-  if (!user) location.href = "/index.html";
+document.addEventListener("DOMContentLoaded", () => {
 
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists() || snap.data().role !== "admin") {
-    alert("Access denied");
-    location.href = "/index.html";
-  }
-});
+  /* ---------- AUTH GUARD ---------- */
+  auth.onAuthStateChanged(async user => {
+    if (!user) location.href = "/index.html";
 
-/* ELEMENTS */
-const tenantSelect = document.getElementById("tenantSelect");
-const rentTenantSelect = document.getElementById("rentTenantSelect");
-const roomTable = document.getElementById("roomTable");
-const complaintList = document.getElementById("complaintList");
-
-const tenantsCount = document.getElementById("tenants");
-const paidRents = document.getElementById("paidRents");
-const complaintsCount = document.getElementById("complaints");
-
-/* LOAD TENANTS + ROOM LIST */
-async function loadTenants() {
-  const snap = await getDocs(collection(db, "users"));
-
-  tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
-  rentTenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
-  roomTable.innerHTML = "";
-
-  let total = 0, paid = 0;
-
-  snap.forEach(d => {
-    const u = d.data();
-    if (u.role === "tenant") {
-      total++;
-      if (u.rentPaid) paid++;
-
-      const opt = new Option(`${u.name} (${u.email})`, d.id);
-      tenantSelect.add(opt.cloneNode(true));
-      rentTenantSelect.add(opt);
-
-      roomTable.innerHTML += `
-        <tr>
-          <td>${u.name}</td>
-          <td>${u.email}</td>
-          <td>${u.roomId || "-"}</td>
-          <td>${u.rentAmount ? "₹" + u.rentAmount : "-"}</td>
-          <td>${u.rentPaid ? "Paid" : "Pending"}</td>
-        </tr>
-      `;
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists() || snap.data().role !== "admin") {
+      alert("Access denied");
+      location.href = "/index.html";
     }
   });
 
-  tenantsCount.textContent = total;
-  paidRents.textContent = paid;
-}
+  /* ---------- ELEMENTS ---------- */
+  const tenantSelect = document.getElementById("tenantSelect");
+  const rentTenantSelect = document.getElementById("rentTenantSelect");
+  const roomTable = document.getElementById("roomTable");
+  const complaintList = document.getElementById("complaintList");
+  const noticeList = document.getElementById("noticeList");
 
-/* ASSIGN ROOM */
-window.assignRoom = async () => {
-  if (!tenantSelect.value || !roomNo.value) return alert("Missing fields");
-  await updateDoc(doc(db, "users", tenantSelect.value), { roomId: roomNo.value });
-  loadTenants();
-};
+  const tenantsCount = document.getElementById("tenants");
+  const paidRents = document.getElementById("paidRents");
+  const complaintsCount = document.getElementById("complaints");
 
-/* UPDATE RENT */
-window.updateRent = async () => {
-  await updateDoc(doc(db, "users", rentTenantSelect.value), {
-    rentAmount: Number(rentAmount.value),
-    rentPaid: rentStatus.value === "true"
-  });
-  loadTenants();
-};
+  /* ---------- LOAD TENANTS ---------- */
+  async function loadTenants() {
+    const snap = await getDocs(collection(db, "users"));
 
-/* POST NOTICE */
-window.postNotice = async () => {
-  const text = noticeText.value.trim();
-  if (!text) return alert("Enter notice");
+    tenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
+    rentTenantSelect.innerHTML = `<option value="">Select Tenant</option>`;
+    roomTable.innerHTML = "";
 
-  await addDoc(collection(db, "notices"), {
-    message: text,
-    createdAt: new Date()
-  });
+    let total = 0, paid = 0;
 
-  noticeText.value = "";
-  loadNotices();
-  alert("📢 Notice posted");
-};
+    snap.forEach(d => {
+      const u = d.data();
+      if (u.role === "tenant") {
+        total++;
+        if (u.rentPaid) paid++;
 
-const noticeList = document.getElementById("noticeList");
+        const opt = new Option(`${u.name} (${u.email})`, d.id);
+        tenantSelect.add(opt.cloneNode(true));
+        rentTenantSelect.add(opt);
 
-async function loadNotices() {
-  const snap = await getDocs(
-    query(collection(db, "notices"), orderBy("createdAt", "desc"))
-  );
+        roomTable.innerHTML += `
+          <tr>
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td>${u.roomId || "-"}</td>
+            <td>${u.rentAmount ? "₹" + u.rentAmount : "-"}</td>
+            <td>${u.rentPaid ? "Paid" : "Pending"}</td>
+          </tr>
+        `;
+      }
+    });
 
-  noticeList.innerHTML = "";
-
-  if (snap.empty) {
-    noticeList.innerHTML = "<li class='muted'>No notices posted</li>";
-    return;
+    tenantsCount.textContent = total;
+    paidRents.textContent = paid;
   }
 
-  snap.forEach(d => {
-    noticeList.innerHTML += `
-      <li>
-        ${d.data().message}
-        <button class="small danger" onclick="deleteNotice('${d.id}')">
-          Delete
-        </button>
-      </li>
-    `;
-  });
-}
-window.deleteNotice = async id => {
-  if (!confirm("Delete this notice?")) return;
+  /* ---------- ASSIGN ROOM ---------- */
+  window.assignRoom = async () => {
+    if (!tenantSelect.value || !roomNo.value) return alert("Missing fields");
+    await updateDoc(doc(db, "users", tenantSelect.value), {
+      roomId: roomNo.value
+    });
+    loadTenants();
+  };
 
-  await deleteDoc(doc(db, "notices", id));
-  loadNotices();
-};
+  /* ---------- UPDATE RENT ---------- */
+  window.updateRent = async () => {
+    await updateDoc(doc(db, "users", rentTenantSelect.value), {
+      rentAmount: Number(rentAmount.value),
+      rentPaid: rentStatus.value === "true"
+    });
+    loadTenants();
+  };
 
-/* LOAD COMPLAINTS WITH TENANT NAME */
-async function loadComplaints() {
-  const snap = await getDocs(
-    query(collection(db, "complaints"), where("status", "==", "Pending"))
-  );
+  /* ---------- POST NOTICE ---------- */
+  window.postNotice = async () => {
+    const text = noticeText.value.trim();
+    if (!text) return alert("Enter notice");
 
-  complaintList.innerHTML = "";
-  complaintsCount.textContent = snap.size;
+    await addDoc(collection(db, "notices"), {
+      message: text,
+      createdAt: new Date()
+    });
 
-  for (const d of snap.docs) {
-    const c = d.data();
-    const userSnap = await getDoc(doc(db, "users", c.userId));
+    noticeText.value = "";
+    loadNotices();
+  };
 
-    complaintList.innerHTML += `
-      <li>
-        <strong>${userSnap.data().name}</strong>: ${c.message}
-        <button class="small" onclick="resolve('${d.id}')">Resolve</button>
-      </li>
-    `;
+  /* ---------- LOAD NOTICES ---------- */
+  async function loadNotices() {
+    noticeList.innerHTML = "";
+
+    const snap = await getDocs(
+      query(collection(db, "notices"), orderBy("createdAt", "desc"))
+    );
+
+    if (snap.empty) {
+      noticeList.innerHTML = "<li class='muted'>No notices posted</li>";
+      return;
+    }
+
+    snap.forEach(d => {
+      noticeList.innerHTML += `
+        <li>
+          ${d.data().message}
+          <button class="small danger" onclick="deleteNotice('${d.id}')">
+            Delete
+          </button>
+        </li>
+      `;
+    });
   }
-}
 
-window.resolve = async id => {
-  await updateDoc(doc(db, "complaints", id), { status: "Resolved" });
+  window.deleteNotice = async id => {
+    if (!confirm("Delete this notice?")) return;
+    await deleteDoc(doc(db, "notices", id));
+    loadNotices();
+  };
+
+  /* ---------- LOAD COMPLAINTS ---------- */
+  async function loadComplaints() {
+    const snap = await getDocs(
+      query(collection(db, "complaints"), where("status", "==", "Pending"))
+    );
+
+    complaintList.innerHTML = "";
+    complaintsCount.textContent = snap.size;
+
+    for (const d of snap.docs) {
+      const c = d.data();
+      const userSnap = await getDoc(doc(db, "users", c.userId));
+
+      complaintList.innerHTML += `
+        <li>
+          <strong>${userSnap.data().name}</strong>: ${c.message}
+          <button class="small" onclick="resolve('${d.id}')">Resolve</button>
+        </li>
+      `;
+    }
+  }
+
+  window.resolve = async id => {
+    await updateDoc(doc(db, "complaints", id), { status: "Resolved" });
+    loadComplaints();
+  };
+
+  window.logout = async () => {
+    await signOut(auth);
+    location.href = "/index.html";
+  };
+
+  /* ---------- INIT ---------- */
+  loadTenants();
   loadComplaints();
-};
-
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "/index.html";
-};
-
-loadTenants();
-loadComplaints();
-loadNotices();
+  loadNotices();
+});
